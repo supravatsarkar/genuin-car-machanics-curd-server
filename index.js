@@ -1,5 +1,6 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 const cors = require('cors');
 require('dotenv').config()
 const app = express();
@@ -22,10 +23,39 @@ async function run() {
         const database = client.db('GeniusCarMechanic');
         const serviceCollection = database.collection('services');
 
+        // get api
+        app.get('/services', async (req, res) => {
+            console.log('get request hit');
+            const query = {};
+            const cursor = serviceCollection.find(query);
+            result = await cursor.toArray();
+            res.send(result);
+        })
+
+        //Get Single Api
+        app.get('/services/book/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const service = await serviceCollection.findOne(query);
+            res.json(service);
+        })
+
+
+        // post api 
         app.post('/services/addServices', async (req, res) => {
             const service = req.body;
             console.log(service);
             const result = await serviceCollection.insertOne(service);
+            res.json(result);
+        })
+
+        // delete api
+        app.delete('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log("hitting delete api id:", id);
+            const query = { _id: ObjectId(id) };
+            const result = await serviceCollection.deleteOne(query);
+            console.log('Delete success result-', result);
             res.json(result);
         })
 
